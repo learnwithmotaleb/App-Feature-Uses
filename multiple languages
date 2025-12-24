@@ -1,0 +1,1074 @@
+//=======================================Main Dartt======================================
+
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:jibjab/utils/device_utils/device_utils.dart';
+
+import 'core/routes/route_path.dart';
+import 'core/routes/routes.dart';
+import 'core/theme/light_theme.dart';
+import 'dependency_injection/getx_injection.dart';
+import 'global/language/controller/language_controller.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final LanguageController languageController = Get.put(LanguageController());
+  await languageController.loadLanguage();
+  runApp(const MyApp());
+}
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    final LanguageController lc = Get.put(LanguageController());
+
+    return ScreenUtilInit(
+      designSize: const Size(393, 852),
+      minTextAdapt: true,
+      useInheritedMediaQuery: true,
+      builder: (context, _) {
+        return Obx(() {
+          Locale locale = lc.isEnglish.value
+              ? const Locale('en', 'US')
+              : const Locale('ar', 'SA');
+
+          return GetMaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+           locale: locale,
+            fallbackLocale: const Locale('en', 'US'),
+            translations: Language(),
+            getPages: AppRouter.pages,
+            initialRoute: RoutePath.splash,
+
+
+          );
+        });
+      },
+    );
+  }
+}
+
+
+
+//===========================================Save Languages ===========================
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SharePrefsHelper {
+
+  //=============================Save Languages=================
+  static Future<void> setBool(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
+
+
+  //=============================Load Languages=================
+  static Future<bool?> getBool(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(key);
+  }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===================================Getx Controller===================================================
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../helper/local_db/local_db.dart';
+import '../../../utils/app_const/app_const.dart';
+import '../arabic/arabic.dart';
+import '../eng/eng.dart';
+
+class Language extends Translations {
+  @override
+  Map<String, Map<String, String>> get keys => {
+    "en_US": english,
+    "ar_SA": arabic,
+  };
+}
+
+class LanguageController extends GetxController {
+  static LanguageController get to => Get.find();
+
+  RxBool isEnglish = true.obs;
+
+  // Load saved language
+  Future<void> loadLanguage() async {
+    isEnglish.value =
+        await SharePrefsHelper.getBool(AppConstants.language) ?? true;
+    _updateLocale();
+  }
+
+  // Switch language
+  Future<void> switchLanguage(bool englishSelected) async {
+    isEnglish.value = englishSelected;
+    _updateLocale();
+    await SharePrefsHelper.setBool(AppConstants.language, englishSelected);
+  }
+
+  void _updateLocale() {
+    if (isEnglish.value) {
+      Get.updateLocale(const Locale("en", "US"));
+    } else {
+      Get.updateLocale(const Locale("ar", "SA"));
+    }
+  }
+
+}
+
+
+//=============================Change Languages ===============================
+class LanguageSettingController extends GetxController {
+  static LanguageSettingController get to => Get.find();
+
+  // Selected language
+  var selectedLanguage = ''.obs;
+
+  final lc = LanguageController.to;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Initialize selected language based on saved value
+    selectedLanguage.value = lc.isEnglish.value ? 'en' : 'ar';
+  }
+
+  // Change language method
+  void changeLanguage(String value) {
+    selectedLanguage.value = value;
+    if (value == 'en') {
+      lc.switchLanguage(true);
+    } else {
+      lc.switchLanguage(false);
+    }
+  }
+}
+
+
+
+=============================Use Languages=========================
+  // Initialize the LanguageSettingController
+  final LanguageSettingController lsc =
+  Get.put(LanguageSettingController());
+
+
+
+
+
+=====================================Ui========================================
+
+Obx(() => GestureDetector(
+      onTap: () => lsc.changeLanguage(value),
+      child: Container(
+    
+    
+    )
+    
+    );
+
+//===================================================================
+        final lc = LanguageController.to;
+
+        onTap: () => lc.switchLanguage(true),
+
+
+
+
+
+
+
+
+
+
+
+
+==========Here all String =====================================
+class AppStrings {
+
+  //======================Onboard/Loading Bar =====================
+  static const String mentorYourPackageTitle = "Monitor your package's journey at every stage.";
+  static const String mentorYourPackageSubTitle = "Keep track of your package's location in real-time.";
+  static const String nextButton = "Next";
+  static const String continueButton = "Continue";
+  static const String joinUSButton = "Join Us";
+  static const String userButton = "User";
+  static const String welcomeToJibJab = "Welcome to JibJab!";
+  static const String welcomeTo = "Welcome to ";//not translate arabic
+  static const String everythingYouNeedTitle = "Everything you need, in one app – Jibjab!";
+  static const String everythingYouNeedSubTitle = "Keep track of your package's location in real-time.";
+  static const String selectYourLanguage = "Select Your Language";
+  static const String english = "English";
+  static const String arabic = "العربية";
+
+
+
+  //====================Sign In=======================
+
+  static const String signIn = "Sign In";
+  static const String signInSubTitle = "Welcome Back, You’ve been missed.";
+  static const String email = "Email";
+  static const String enterYourEmail = "Enter your email";
+  static const String password = "Password";
+  static const String enterYourPassword = "Enter your password";
+  static const String forgotPassword = "Forgot password?";
+  static const String signInWith = "Sign In with";
+
+
+  //=====================User Authentication=====================
+  static const String signup = "Sign Up";
+  static const String signupSubTitle = "Let's get you set up and ready to go.";
+  static const String fullName = "Full Name";
+  static const String enterYourName = "Enter your name";
+  static const String confirmPassword = "Confirm Password";
+  static const String dontHaveAnAccount = "Don’t have an account?";
+  static const String verification = "Verification";
+  static const String verifyYourAccount = "Verify Your Account";
+  static const String verifyYourAccountSubTitle = "We've sent a verification code to your email/phone. Please check and enter it below.";
+  static const String dontGetCode = "Didn’t get a code?  Resend Code";
+  static const String resendCode = "Resend Code";
+  static const String verifyCode = "Verify Code";
+  static const String forgetPassword = "Forgot password";
+  static const String forgetPasswordSubTitle = "Enter your email and we will send you a verification code";
+  static const String sendCode = "Send Code";
+  static const String resetPassword = "Reset Password";
+  static const String enterNewPassword = "Enter New Password";
+  static const String enterYourNewPassword = "Enter your new password";
+  static const String confirmNewPassword = "Confirm New Password";
+  static const String confirmYourNewPassword = "Confirm your new password";
+
+
+
+
+
+
+  //============================Home=====================
+  static const String appName = " Jibjab!";
+  static const String averageResponse = "Average response";
+  static const String deliveriesResponse = "Deliveries response";
+  static const String reducedCarRides = "Reduced car rides";
+  static const String activePostInYourArea = "Active post in your area";
+  static const String lastestNews = "Lastest news";
+  static const String readMore = "Read more";
+  static const String earnCreditsByInvitingFriends = "Earn credits by inviting friends";
+  static const String inviteAndEarn = "Invite & earn";
+  static const String howExplainIn20 = "How explain in 20 sec.";
+  static const String advertiser = "Advertiser";
+  static const String positiveRating = "Positive rating";
+  static const String nearby  = "Near by";
+  static const String share  = "Share";
+  static const String reportAdToJibjab = "report ad to Jibjab!";
+  static const String picUp = "Pic up";
+  static const String importantTerms = "Important Terms";
+  static const String verifyWithBank = "Verify with Bank";
+  static const String inviteButton = "Invite";
+  static const String advertiserProfile = "Advertiser profile";
+
+
+
+
+  //========================================Post===============================
+  static const String post = "Post";
+  static const String newest = "Newest";
+  static const String sortedBy = "Sorted by";
+  static const String distance = "Distance";
+  static const String showAvailablePostOnly  = "Show available post only";
+  static const String onlyPostRequiring1Person  = "Only post requiring 1 person";
+  static const String showOnlyPostWithOutRequests   = "Show only post without requests";
+  static const String onlyPostOfSelectedSize  = "Only post of selected  size";
+  static const String postType  = "Post type";
+  static const String moveDeliver  = "Move/Deliver";
+  static const String buyDeliver  = "Buy/Deliver";
+  static const String recycle  = "Recycle";
+  static const String freeGiveaway  = "Free Giveaway";
+
+
+  //=============================My Post===============================
+  static const String myPost  = "My post";
+  static const String pendingPost  = "Pending Post";
+  static const String activePost  = "Active Post";
+  static const String completedPost  = "Completed Post";
+  static const String myAccepted  = "My Accepted";
+  static const String customerReview  = "Customer Review";
+  static const String reviews  = "Reviews";
+  static const String viewMore  = "View More";
+
+
+
+
+  //=====================================Add New Order===========================
+
+  static const String allCategories  = "all Categories";
+  static const String whatDoYouNeedHelpWith  = "What do you need help with?";
+  static const String categories  = "Categories";
+  static const String moveAndDelivery  = "Move and delivery";
+  static const String moveAnythingFromAToB  = "Move anything from A to B";
+  static const String sameDayDelivery   = "Same day delivery ";
+  static const String addNewPost = "Add New Post";
+  static const String secureInAppPaymentOnceYouConfirmTheJobDone = "Secure in app payment once you confirm the job done";
+
+  //============================Buy/Deliver===============================
+  static const String selectStore = "Select store";
+  static const String storeName = "Store name";
+  static const String recentlyUsedAddresses = "Recently Used Addresses";
+  static const String shoppingList = "Shopping list";
+
+
+  static const String cancelButton = "Cancel";
+  static const String cancelButtonTitle = "Select time slot(s) for pick-up";
+  static const String cancelButtonSubTitle = "Deliveries are usually done as soon possible after the pick-up time ";
+  static const String pickupNow = "Pickup now";
+  static const String pickupLater = "Pickup Later";
+  static const String hideExactTimeSlots = "Hide exact time slots";
+
+
+  static const String pickUp = "Pic-Up ";
+  static const String dropLocation = "Drop Location";
+  static const String searchAddress = "Search Address..";
+  static const String canHelpCarryAtPickUp = "Can help carry at pick -up";
+  static const String titleAndDescription = "Title & Description";
+  static const String title = "Title";
+  static const String enterTitle = "Enter title";
+  static const String description = "Description";
+  static const String enterDescription = "Enter description";
+  static const String howBigIsTheCollection = "How big is the collection ?";
+  static const String thereAreAFewThings = "There are a few things we strongly recommend against when using Jibjab!";
+  static const String learnMore = "Learn more";
+  static const String iWillPay = "I will pay";
+  static const String iWillPaySubTitle = "Other users have paid around \$28-\$42";
+  static const String yourPayment = "Your payment";
+  static const String enterPrice = "Enter price ";
+  static const String doYouHaveCampaignCode = "Do you have a campaign code?";
+  static const String detailsPage = "Details page";
+  static const String publishPost = "Publish post";
+  static const String wallet = "Wallet";
+  static const String stripe = "Stripe";
+  static const String submit = "submit";
+  static const String transactionHistory = "Transaction History";
+
+
+
+
+  //========================Profile====================================
+  static const String profile = "Profile";
+  static const String editProfile = "Edit Profile";
+  static const String accountSetting = "Account Setting";
+  static const String publicProfileInfo = "Public profile info";
+  static const String history = "History";
+  static const String language = "Language";
+  static const String more = "More";
+  static const String faq = "FAQ";
+  static const String contactUs = "Contact us";
+  static const String termsAndCondition = "Terms & Condition";
+  static const String privacyPolicy = "Privacy policy";
+  static const String logOut = "Log Out";
+  static const String login = "Login";
+  static const String name = "Name";
+  static const String contactNumber = "Contact number";
+  static const String update = "Update";
+  static const String hello = "Hello!";
+  static const String howCanWeHelp = "How can we help ?";
+  static const String supportEmail = "Support@jabjab.com";
+  static const String messageUs = "Message Us";
+  static const String enterYourEmailHere = "Enter your email here";
+  static const String phoneNumber = "Phone Number";
+  static const String enterYourPhoneNumberHere = "Enter your number here";
+  static const String descriptionOfTheIssue = "Description of the issue";
+  static const String enterYourDescriptionHere = "Enter your description here";
+  static const String moreInfo = "More info";
+  static const String save = "Save";
+
+
+
+
+  //==================================Account Setting===========================
+ // static const String accountSetting = "Account Setting";
+ static const String changePassword = "Change Password";
+ static const String deleteAccount = "Delete Account";
+ static const String newPassword = "New password";
+ static const String newConfirmPassword = "New Confirm password";
+ static const String faqs = "FAQs";
+ static const String needMoreHelp = "Need More Help?";
+ static const String notification = "Notification";
+
+
+ //===================================No Translate for Arabic Only just Text=====================
+  static const String orderPriority = "Order Priority :";
+  static const String deliveryAddress = "Delivery address : ";
+  static const String deliveryAddressBody = "Integer turpis quam, laoreet id orci nec, ultrices lacinia nunc. Aliquam erat vo";
+  static const String pickupAddress = "Pickup Address : ";
+  static const String pickupAddressBody = "901 Thornridge Cir. Shiloh, Hawaii 81063";
+  static const String advertiserWillNotBeAb = "Advertiser will not be able to help you carry any items";
+
+
+
+  //=======================================
+  static const String becomeAHelper = "Become a helper";
+  static const String becomeAHelperSubTitle = "Earn an extra income by helping others with moving, delivering and recycling things. You use your own vehicle, and choose who and when to offer your help.";
+
+  static const String trueFlexibility = "True flexibility";
+  static const String trueFlexibilitySubTitle = "You decide how much you drive and earn with Task app.";
+
+  static const String superEasyToGetStarted = "Super easy to get started";
+  static const String superEasyToGetStartedSubTitle = "You can get started today and earn your first income.";
+
+
+  static const String becauseEarthLovesIt = "Because earth loves it";
+  static const String becauseEarthLovesItSubTitle = "Through helping others help reduce cars on our roads.";
+
+  static const String importantTermSubTitle = "Important Terms Before you can become a Helper on our platform";
+
+
+  //=========================================Invite Screen =============================
+  static const String invite = "Invite";
+
+  static const String inviteSubTitle1 = "Give a frienf \$100 in credite to use for their ";
+  static const String inviteSubTitle2 = "When they v=have done  a post you will also get \$100";
+  static const String inviteImageTile = "A PAIR OF HELPING HANIDS!";
+  static const String inviteUrl = "https://jibjab.app/download";
+  static const String inviteTextCenter = "You can also tap this URL to copy it and paste somewhere";
+
+
+  //=============================AdviserProfile==============================
+  static const String adviserProfile = "Advertiser profile";
+  static const String moreInfoAdviser = "Registration Date: 12 Aug 2025 \nCampaigns: 24 \nActive Campaigns: 3 \nCompleted Campaigns: 21 \nTotal earn: \$15,200";
+
+
+
+
+
+  //==============================TermsAndCodition======================
+   static const String termsAndConditionSubTitle = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.";
+
+
+
+
+
+  //==============================TermsAndCodition======================
+   static const String selectTimeSlotTitle = "Select time slot(s) for pick-up";
+   static const String selectTimeSlotSubTitle = "Deliveries are usally done as soonas possible after the pick-up time";
+   static const String asSoonAsPossible = "As soon as\npossible";
+   static const String anyTime = "Any time";
+   static const String hideExactTimeSlot = "Hide exact time slots";
+
+
+     //==============================TermsAndCodition======================
+
+   static const String pickOff = "Pick Off";
+  static const String dropOff = "Drop Off";
+
+
+  //=============================title and description Page===============
+  static const String itsQuickSmall = "It’s quite small .Just some light weight thing that easyily fits into a small hatchback car.(Note: This is not a selection of a vehicle ,it is estimationfor any person thatwant to help. ";
+  static const String thereAreAFewThingsWe = "There are a few things we strongly recommend against when using Jibjab!";
+
+
+
+
+
+  //=============================recommend Page===============
+  static const String recommend = "recommend";
+  static const String thingsWeStronglyRecommend = "Things we strongly recommend against  ";
+  static const String weAdviceYouNot = "We advices you not  to use Jibjab! when moving or getting rid of extremely heavy ";
+  static const String exampleOfSuchItemsAre = "Examples of such items are ";
+  static const String pianos = "-pianos";
+  static const String safetyBoxes = "-safety boxes";
+  static const String bouldersGravelSoil = "-boulders, gravel, soil or other large piles of rubble.";
+
+
+
+
+
+
+
+
+
+
+
+
+  //============================================Will Pay screen=======================
+  static const String otherUsersHavePaidAround = "Other users have paid around \$28-\$42";
+  static const String redeem = "Redeem";
+
+  static const String confirmAddress = "Confirm Address";
+  static const String transactionItemList = "Transaction List Items";
+
+
+  //====================================Waste Type=== =================
+
+  static const String wasteType = "Waste Type";
+  static const String allWasteIsSorted = "All waste is sorted";
+  static const String unsortedCollectionTakes = 'Unsorted collection takes longer to recycle and may cost more.';
+
+
+
+
+
+
+  //====================================Waste Type=== =================
+
+  static const String canHelpCarryAtPickUP =  "Can help carry at pick-up";
+  static const String promoteForVideoDescription =  "How JibJab Checks Recycling Verified Recycling for Peace of Mind. At JibJab, we ensure that every recycling task is fully verified with GPS, time stamps, and photos. This means you can trust that your items are being handled properly and responsibly. Safe. Transparent. Reliable.";
+
+
+
+
+///=============================================================English Languages ===============================
+import '../../../utils/static_strings/static_strings.dart';
+
+Map<String, String> english = {
+  //=============================Onboarding=============================
+  AppStrings.mentorYourPackageTitle:
+      "Monitor your package's journey at every stage.",
+  AppStrings.mentorYourPackageSubTitle:
+      "Keep track of your package's location in real-time.",
+  AppStrings.nextButton: "Next",
+  AppStrings.continueButton: "Continue",
+  AppStrings.joinUSButton: "Join Us",
+  AppStrings.userButton: "User",
+  AppStrings.welcomeToJibJab: "Welcome to JibJab!",
+  AppStrings.everythingYouNeedTitle:
+      "Everything you need, in one app – Jibjab!",
+  AppStrings.everythingYouNeedSubTitle:
+      "Keep track of your package's location in real-time.",
+  AppStrings.selectYourLanguage: "Select Your Language",
+  AppStrings.english: "English",
+  AppStrings.arabic: "العربية",
+
+  //=============================Sign In=============================
+  AppStrings.signInSubTitle: "Welcome Back, You've been missed.",
+  AppStrings.enterYourEmail: "Enter your email",
+  AppStrings.enterYourPassword: "Enter your password",
+  AppStrings.forgotPassword: "Forgot password?",
+  AppStrings.signInWith: "Sign In with",
+
+  //=============================User Authentication=====================
+  AppStrings.signupSubTitle: "Let's get you set up and ready to go.",
+  AppStrings.fullName: "Full Name",
+  AppStrings.enterYourName: "Enter your name",
+  AppStrings.verifyYourAccount: "Verify Your Account",
+  AppStrings.verifyYourAccountSubTitle:
+      "We've sent a verification code to your email/phone. Please check and enter it below.",
+  AppStrings.dontGetCode: "Didn't get a code?  Resend Code",
+  AppStrings.resendCode: "Resend Code",
+  AppStrings.verifyCode: "Verify Code",
+  AppStrings.forgetPasswordSubTitle:
+      "Enter your email and we will send you a verification code",
+  AppStrings.resetPassword: "Reset Password",
+  AppStrings.enterYourNewPassword: "Enter your new password",
+  AppStrings.confirmNewPassword: "Confirm New Password",
+  AppStrings.confirmYourNewPassword: "Confirm your new password",
+  AppStrings.dontHaveAnAccount: "Don't have an account?",
+
+  //=============================Home=============================
+  AppStrings.appName: "Jibjab!",
+  AppStrings.language: "Language",
+  AppStrings.averageResponse: "Average response",
+  AppStrings.deliveriesResponse: "Deliveries response",
+  AppStrings.reducedCarRides: "Reduced car rides",
+  AppStrings.activePostInYourArea: "Active post in your area",
+  AppStrings.lastestNews: "Latest news",
+  AppStrings.readMore: "Read more",
+  AppStrings.earnCreditsByInvitingFriends: "Earn credits by inviting friends",
+  AppStrings.inviteAndEarn: "Invite & earn",
+  AppStrings.howExplainIn20: "How explain in 20 sec.",
+  AppStrings.advertiser: "Advertiser",
+  AppStrings.positiveRating: "Positive rating",
+  AppStrings.nearby: "Near by",
+  AppStrings.share: "Share",
+  AppStrings.reportAdToJibjab: "report ad to Jibjab!",
+  AppStrings.picUp: "Pick up",
+  AppStrings.importantTerms: "important",
+  AppStrings.verifyWithBank: "Verify with Bank",
+  AppStrings.inviteButton: "Invite",
+  AppStrings.advertiserProfile: "Advertiser profile",
+
+  //=============================Post===============================
+  AppStrings.post: "Post",
+  AppStrings.newest: "Newest",
+  AppStrings.sortedBy: "Sorted by",
+  AppStrings.distance: "Distance",
+  AppStrings.showAvailablePostOnly: "Show available post only",
+  AppStrings.onlyPostRequiring1Person: "Only post requiring 1 person",
+  AppStrings.showOnlyPostWithOutRequests: "Show only post without requests",
+  AppStrings.onlyPostOfSelectedSize: "Only post of selected size",
+  AppStrings.postType: "Post type",
+  AppStrings.moveDeliver: "Move/Deliver",
+  AppStrings.buyDeliver: "Buy/Deliver",
+  AppStrings.recycle: "Recycle",
+  AppStrings.freeGiveaway: "Free Giveaway",
+
+  //=============================My Post===============================
+  AppStrings.myPost: "My post",
+  AppStrings.pendingPost: "Pending Post",
+  AppStrings.activePost: "Active Post",
+  AppStrings.completedPost: "Completed Post",
+  AppStrings.myAccepted: "My Accepted",
+  AppStrings.customerReview: "Customer Review",
+  AppStrings.reviews: "Reviews",
+  AppStrings.viewMore: "View More",
+
+  //=============================Add New Order===========================
+  AppStrings.allCategories: "All Categories",
+  AppStrings.whatDoYouNeedHelpWith: "What do you need help with?",
+  AppStrings.categories: "Categories",
+  AppStrings.moveAndDelivery: "Move and delivery",
+  AppStrings.moveAnythingFromAToB: "Move anything from A to B",
+  AppStrings.sameDayDelivery: "Same day delivery",
+  AppStrings.addNewPost: "Add New Post",
+  AppStrings.secureInAppPaymentOnceYouConfirmTheJobDone:
+      "Secure in app payment once you confirm the job done",
+
+  //=============================Buy/Deliver===============================
+  AppStrings.selectStore: "Select store",
+  AppStrings.storeName: "Store name",
+  AppStrings.recentlyUsedAddresses: "Recently Used Addresses",
+  AppStrings.shoppingList: "Shopping list",
+  AppStrings.cancelButton: "Cancel",
+  AppStrings.cancelButtonTitle: "Select time slot(s) for pick-up",
+  AppStrings.cancelButtonSubTitle:
+      "Deliveries are usually done as soon possible after the pick-up time",
+  AppStrings.pickupNow: "Pickup now",
+  AppStrings.pickupLater: "Pickup Later",
+  AppStrings.hideExactTimeSlots: "Hide exact time slots",
+  AppStrings.pickUp: "Pick-Up",
+  AppStrings.dropLocation: "Drop Location",
+  AppStrings.searchAddress: "Search Address..",
+  AppStrings.canHelpCarryAtPickUp: "Can help carry at pick-up",
+  AppStrings.titleAndDescription: "Title & Description",
+  AppStrings.title: "Title",
+  AppStrings.enterTitle: "Enter title",
+  AppStrings.description: "Description",
+  AppStrings.enterDescription: "Enter description",
+  AppStrings.howBigIsTheCollection: "How big is the collection?",
+  AppStrings.thereAreAFewThings:
+      "There are a few things we strongly recommend against when using Jibjab!",
+  AppStrings.learnMore: "Learn more",
+  AppStrings.iWillPay: "I will pay",
+  AppStrings.iWillPaySubTitle: "Other users have paid around \$28-\$42",
+  AppStrings.yourPayment: "Your payment",
+  AppStrings.enterPrice: "Enter price",
+  AppStrings.doYouHaveCampaignCode: "Do you have a campaign code?",
+  AppStrings.detailsPage: "Details page",
+  AppStrings.publishPost: "Publish post",
+  AppStrings.wallet: "Wallet",
+  AppStrings.stripe: "Stripe",
+  AppStrings.submit: "Submit",
+  AppStrings.transactionHistory: "Transaction History",
+
+  //=============================Profile====================================
+  AppStrings.profile: "Profile",
+  AppStrings.editProfile: "Edit Profile",
+  AppStrings.accountSetting: "Account Setting",
+  AppStrings.publicProfileInfo: "Public profile info",
+  AppStrings.notification: "Notification",
+  AppStrings.more: "More",
+  AppStrings.faq: "FAQ",
+  AppStrings.contactUs: "Contact us",
+  AppStrings.termsAndCondition: "Terms & Condition",
+  AppStrings.privacyPolicy: "Privacy policy",
+  AppStrings.name: "Name",
+  AppStrings.update: "Update",
+  AppStrings.hello: "Hello!",
+  AppStrings.howCanWeHelp: "How can we help?",
+  AppStrings.supportEmail: "Support@jabjab.com",
+  AppStrings.messageUs: "Message Us",
+  AppStrings.enterYourEmailHere: "Enter your email here",
+  AppStrings.phoneNumber: "Phone Number",
+  AppStrings.enterYourPhoneNumberHere: "Enter your number here",
+  AppStrings.descriptionOfTheIssue: "Description of the issue",
+  AppStrings.enterYourDescriptionHere: "Enter your description here",
+  AppStrings.moreInfo: "More info",
+  AppStrings.save: "Save",
+
+  //=============================Account Setting===========================
+  AppStrings.changePassword: "Change Password",
+  AppStrings.deleteAccount: "Delete Account",
+  AppStrings.newPassword: "New password",
+  AppStrings.newConfirmPassword: "New Confirm password",
+  AppStrings.faqs: "FAQs",
+  AppStrings.needMoreHelp: "Need More Help?",
+
+  //===============================================================================
+  AppStrings.orderPriority: "Order Priority :",
+  AppStrings.deliveryAddress: "Delivery address : ",
+  AppStrings.deliveryAddressBody:
+      "Integer turpis quam, laoreet id orci nec, ultrices lacinia nunc. Aliquam erat vo",
+  AppStrings.pickupAddress: "Pickup Address : ",
+  AppStrings.pickupAddressBody: "901 Thornridge Cir. Shiloh, Hawaii 81063",
+  AppStrings.advertiserWillNotBeAb:
+      "Advertiser will not be able to help you carry any items",
+
+  AppStrings.becomeAHelper: "Become a helper",
+  AppStrings.becomeAHelperSubTitle:
+      "Earn an extra income by helping others with moving, delivering and recycling things. You use your own vehicle, and choose who and when to offer your help.",
+
+  AppStrings.trueFlexibility: "True flexibility",
+  AppStrings.trueFlexibilitySubTitle:
+      "You decide how much you drive and earn with Task app.",
+
+  AppStrings.superEasyToGetStarted: "Super easy to get started",
+  AppStrings.superEasyToGetStartedSubTitle:
+      "You can get started today and earn your first income.",
+
+  AppStrings.becauseEarthLovesIt: "Because earth loves it",
+  AppStrings.becauseEarthLovesItSubTitle:
+      "Through helping others help reduce cars on our roads.",
+
+  AppStrings.importantTermSubTitle:
+      "Important Terms Before you can become a Helper on our platform",
+  AppStrings.invite: "Invite",
+  AppStrings.inviteSubTitle1: "Give a friend \$100 in credit to use for their",
+  AppStrings.inviteSubTitle2:
+      "When they have done a post you will also get \$100",
+  AppStrings.inviteImageTile: "A PAIR OF HELPING HANDS!",
+  AppStrings.inviteUrl: "https://jibjab.app/download",
+  AppStrings.inviteTextCenter:
+      "You can also tap this URL to copy it and paste somewhere",
+  AppStrings.adviserProfile: "Advertiser profile",
+  AppStrings.moreInfoAdviser:
+      "Registration Date: 12 Aug 2025 \nCampaigns: 24 \nActive Campaigns: 3 \nCompleted Campaigns: 21 \nTotal earn: \$15,200",
+
+  AppStrings.termsAndConditionSubTitle:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+
+  AppStrings.selectTimeSlotTitle: "Select time slot(s) for pick-up",
+  AppStrings.selectTimeSlotSubTitle:
+      "Deliveries are usually done as soon as possible after the pick-up time",
+  AppStrings.asSoonAsPossible: "As soon as\npossible",
+  AppStrings.anyTime: "Any time",
+  AppStrings.hideExactTimeSlot: "Hide exact time slots",
+
+  AppStrings.pickOff: "Pick Off",
+  AppStrings.dropOff: "Drop Off",
+
+  AppStrings.itsQuickSmall:
+      "It’s quite small. Just some light weight thing that easily fits into a small hatchback car. (Note: This is not a selection of a vehicle, it is an estimation for any person that wants to help.)",
+  AppStrings.thereAreAFewThingsWe:
+      "There are a few things we strongly recommend against when using Jibjab!",
+
+  AppStrings.recommend: "Recommend",
+  AppStrings.thingsWeStronglyRecommend: "Things we strongly recommend against",
+  AppStrings.weAdviceYouNot:
+      "We advise you not to use Jibjab when moving or getting rid of extremely heavy items",
+  AppStrings.exampleOfSuchItemsAre: "Examples of such items are",
+  AppStrings.pianos: "- Pianos",
+  AppStrings.safetyBoxes: "- Safety boxes",
+  AppStrings.bouldersGravelSoil:
+      "- Boulders, gravel, soil or other large piles of rubble",
+
+  AppStrings.otherUsersHavePaidAround: "Other users have paid around \$28-\$42",
+AppStrings.redeem: "Redeem",
+
+AppStrings.confirmAddress: "Confirm Address",
+AppStrings.transactionItemList: "Transaction List Items",
+
+AppStrings.wasteType: "Waste Type",
+AppStrings.allWasteIsSorted: "All waste is sorted",
+AppStrings.unsortedCollectionTakes:
+      "Unsorted collection takes longer to recycle and may cost more.",
+
+AppStrings.canHelpCarryAtPickUP: "Can help carry at pick-up",
+AppStrings.promoteForVideoDescription:
+      "How JibJab Checks Recycling Verified Recycling for Peace of Mind. At JibJab, we ensure that every recycling task is fully verified with GPS, time stamps, and photos. This means you can trust that your items are being handled properly and responsibly. Safe. Transparent. Reliable.",
+
+
+
+};
+
+
+
+//=======================Arabic========================
+import '../../../utils/static_strings/static_strings.dart';
+
+Map<String, String> arabic = {
+  //======================Onboard / Loading ======================
+  AppStrings.mentorYourPackageTitle: "راقب رحلة شحنتك في كل مرحلة.",
+  AppStrings.mentorYourPackageSubTitle: "تابع موقع شحنتك في الوقت الفعلي.",
+  AppStrings.nextButton: "التالي",
+  AppStrings.continueButton: "متابعة",
+  AppStrings.joinUSButton: "انضم إلينا",
+  AppStrings.userButton: "مستخدم",
+  AppStrings.welcomeToJibJab: "مرحبًا بك في جيب جاب!",
+  AppStrings.welcomeTo: "مرحبًا بك في ",
+  AppStrings.everythingYouNeedTitle: "كل ما تحتاجه في تطبيق واحد – جيب جاب!",
+  AppStrings.everythingYouNeedSubTitle: "تابع موقع شحنتك في الوقت الفعلي.",
+  AppStrings.selectYourLanguage: "اختر لغتك",
+  AppStrings.english: "الإنجليزية",
+  AppStrings.arabic: "العربية",
+
+  //====================Sign In=======================
+  AppStrings.signIn: "تسجيل الدخول",
+  AppStrings.signInSubTitle: "مرحبًا بعودتك، لقد افتقدناك.",
+  AppStrings.email: "البريد الإلكتروني",
+  AppStrings.enterYourEmail: "أدخل بريدك الإلكتروني",
+  AppStrings.password: "كلمة المرور",
+  AppStrings.enterYourPassword: "أدخل كلمة المرور",
+  AppStrings.forgotPassword: "هل نسيت كلمة المرور؟",
+  AppStrings.signInWith: "تسجيل الدخول باستخدام",
+
+  //=====================User Authentication=====================
+  AppStrings.signup: "إنشاء حساب",
+  AppStrings.signupSubTitle: "لنبدأ إعداد حسابك.",
+  AppStrings.fullName: "الاسم الكامل",
+  AppStrings.enterYourName: "أدخل اسمك",
+  AppStrings.confirmPassword: "تأكيد كلمة المرور",
+  AppStrings.dontHaveAnAccount: "ليس لديك حساب؟",
+  AppStrings.verification: "التحقق",
+  AppStrings.verifyYourAccount: "تحقق من حسابك",
+  AppStrings.verifyYourAccountSubTitle:
+      "لقد أرسلنا رمز التحقق إلى بريدك الإلكتروني أو هاتفك. يرجى إدخاله أدناه.",
+  AppStrings.dontGetCode: "لم يصلك الرمز؟ أعد الإرسال",
+  AppStrings.resendCode: "إعادة إرسال الرمز",
+  AppStrings.verifyCode: "تأكيد الرمز",
+  AppStrings.forgetPassword: "نسيت كلمة المرور",
+  AppStrings.forgetPasswordSubTitle:
+      "أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق",
+  AppStrings.sendCode: "إرسال الرمز",
+  AppStrings.resetPassword: "إعادة تعيين كلمة المرور",
+  AppStrings.enterNewPassword: "أدخل كلمة المرور الجديدة",
+  AppStrings.enterYourNewPassword: "أدخل كلمة المرور الجديدة",
+  AppStrings.confirmNewPassword: "تأكيد كلمة المرور الجديدة",
+  AppStrings.confirmYourNewPassword: "تأكيد كلمة المرور الجديدة",
+
+  //============================Home=====================
+  AppStrings.appName: "جيب جاب!",
+  AppStrings.averageResponse: "متوسط الاستجابة",
+  AppStrings.deliveriesResponse: "استجابة التوصيل",
+  AppStrings.reducedCarRides: "تقليل رحلات السيارات",
+  AppStrings.activePostInYourArea: "منشورات نشطة في منطقتك",
+  AppStrings.lastestNews: "آخر الأخبار",
+  AppStrings.readMore: "اقرأ المزيد",
+  AppStrings.earnCreditsByInvitingFriends: "اكسب رصيدًا بدعوة الأصدقاء",
+  AppStrings.inviteAndEarn: "ادعُ واكسب",
+  AppStrings.howExplainIn20: "كيف تشرح خلال 20 ثانية",
+  AppStrings.advertiser: "المعلن",
+  AppStrings.positiveRating: "تقييم إيجابي",
+  AppStrings.nearby: "بالقرب",
+  AppStrings.share: "مشاركة",
+  AppStrings.reportAdToJibjab: "الإبلاغ عن إعلان إلى جيب جاب",
+  AppStrings.picUp: "الاستلام",
+  AppStrings.importantTerms: "الشروط المهمة",
+  AppStrings.verifyWithBank: "التحقق عبر البنك",
+  AppStrings.inviteButton: "دعوة",
+  AppStrings.advertiserProfile: "ملف المعلن",
+
+  //========================================Post===============================
+  AppStrings.post: "منشور",
+  AppStrings.newest: "الأحدث",
+  AppStrings.sortedBy: "ترتيب حسب",
+  AppStrings.distance: "المسافة",
+  AppStrings.showAvailablePostOnly: "عرض المنشورات المتاحة فقط",
+  AppStrings.onlyPostRequiring1Person: "منشورات تتطلب شخصًا واحدًا فقط",
+  AppStrings.showOnlyPostWithOutRequests: "منشورات بدون طلبات فقط",
+  AppStrings.onlyPostOfSelectedSize: "منشورات بالحجم المحدد فقط",
+  AppStrings.postType: "نوع المنشور",
+  AppStrings.moveDeliver: "نقل / توصيل",
+  AppStrings.buyDeliver: "شراء / توصيل",
+  AppStrings.recycle: "إعادة التدوير",
+  AppStrings.freeGiveaway: "هدايا مجانية",
+
+  //=============================My Post===============================
+  AppStrings.myPost: "منشوراتي",
+  AppStrings.pendingPost: "منشور قيد الانتظار",
+  AppStrings.activePost: "منشور نشط",
+  AppStrings.completedPost: "منشور مكتمل",
+  AppStrings.myAccepted: "مقبولة لدي",
+  AppStrings.customerReview: "تقييم العملاء",
+  AppStrings.reviews: "التقييمات",
+  AppStrings.viewMore: "عرض المزيد",
+
+  //=====================================Add New Order===========================
+  AppStrings.allCategories: "جميع الفئات",
+  AppStrings.whatDoYouNeedHelpWith: "بماذا تحتاج المساعدة؟",
+  AppStrings.categories: "الفئات",
+  AppStrings.moveAndDelivery: "نقل وتوصيل",
+  AppStrings.moveAnythingFromAToB: "نقل أي شيء من أ إلى ب",
+  AppStrings.sameDayDelivery: "توصيل في نفس اليوم",
+  AppStrings.addNewPost: "إضافة منشور جديد",
+  AppStrings.secureInAppPaymentOnceYouConfirmTheJobDone:
+      "دفع آمن داخل التطبيق بعد تأكيد إتمام المهمة",
+
+  //============================Buy / Deliver===============================
+  AppStrings.selectStore: "اختر المتجر",
+  AppStrings.storeName: "اسم المتجر",
+  AppStrings.recentlyUsedAddresses: "العناوين المستخدمة مؤخرًا",
+  AppStrings.shoppingList: "قائمة التسوق",
+  AppStrings.cancelButton: "إلغاء",
+  AppStrings.cancelButtonTitle: "اختر وقت الاستلام",
+  AppStrings.cancelButtonSubTitle:
+      "يتم التوصيل عادة في أقرب وقت ممكن بعد الاستلام",
+  AppStrings.pickupNow: "الاستلام الآن",
+  AppStrings.pickupLater: "الاستلام لاحقًا",
+  AppStrings.hideExactTimeSlots: "إخفاء الأوقات الدقيقة",
+  AppStrings.pickUp: "الاستلام",
+  AppStrings.dropLocation: "موقع التسليم",
+  AppStrings.searchAddress: "ابحث عن عنوان...",
+  AppStrings.canHelpCarryAtPickUp: "يمكن المساعدة في الحمل عند الاستلام",
+  AppStrings.titleAndDescription: "العنوان والوصف",
+  AppStrings.title: "العنوان",
+  AppStrings.enterTitle: "أدخل العنوان",
+  AppStrings.description: "الوصف",
+  AppStrings.enterDescription: "أدخل الوصف",
+  AppStrings.howBigIsTheCollection: "ما حجم العناصر؟",
+  AppStrings.thereAreAFewThings:
+      "هناك بعض الأشياء التي نوصي بشدة بتجنبها عند استخدام جيب جاب!",
+  AppStrings.learnMore: "اعرف المزيد",
+  AppStrings.iWillPay: "سأدفع",
+  AppStrings.iWillPaySubTitle: "دفع مستخدمون آخرون حوالي 28–42 دولارًا",
+  AppStrings.yourPayment: "مبلغ الدفع",
+  AppStrings.enterPrice: "أدخل السعر",
+  AppStrings.doYouHaveCampaignCode: "هل لديك رمز حملة؟",
+  AppStrings.detailsPage: "صفحة التفاصيل",
+  AppStrings.publishPost: "نشر المنشور",
+  AppStrings.wallet: "المحفظة",
+  AppStrings.stripe: "سترايب",
+  AppStrings.submit: "إرسال",
+  AppStrings.transactionHistory: "سجل المعاملات",
+
+  //========================Profile====================================
+  AppStrings.profile: "الملف الشخصي",
+  AppStrings.editProfile: "تعديل الملف الشخصي",
+  AppStrings.accountSetting: "إعدادات الحساب",
+  AppStrings.publicProfileInfo: "معلومات الملف العامة",
+  AppStrings.notification: "الإشعارات",
+  AppStrings.history: "السجل",
+  AppStrings.language: "اللغة",
+  AppStrings.more: "المزيد",
+  AppStrings.faq: "الأسئلة الشائعة",
+  AppStrings.contactUs: "اتصل بنا",
+  AppStrings.termsAndCondition: "الشروط والأحكام",
+  AppStrings.privacyPolicy: "سياسة الخصوصية",
+  AppStrings.logOut: "تسجيل الخروج",
+  AppStrings.login: "تسجيل الدخول",
+  AppStrings.name: "الاسم",
+  AppStrings.contactNumber: "رقم الاتصال",
+  AppStrings.update: "تحديث",
+  AppStrings.hello: "مرحبًا!",
+  AppStrings.howCanWeHelp: "كيف يمكننا مساعدتك؟",
+  AppStrings.supportEmail: "Support@jabjab.com",
+  AppStrings.messageUs: "راسلنا",
+  AppStrings.enterYourEmailHere: "أدخل بريدك الإلكتروني هنا",
+  AppStrings.phoneNumber: "رقم الهاتف",
+  AppStrings.enterYourPhoneNumberHere: "أدخل رقم هاتفك",
+  AppStrings.descriptionOfTheIssue: "وصف المشكلة",
+  AppStrings.enterYourDescriptionHere: "أدخل وصف المشكلة",
+  AppStrings.moreInfo: "معلومات إضافية",
+  AppStrings.save: "حفظ",
+
+  //=============================Account Setting===========================
+  AppStrings.changePassword: "تغيير كلمة المرور",
+  AppStrings.deleteAccount: "حذف الحساب",
+  AppStrings.newPassword: "كلمة مرور جديدة",
+  AppStrings.newConfirmPassword: "تأكيد كلمة المرور الجديدة",
+  AppStrings.faqs: "الأسئلة الشائعة",
+  AppStrings.needMoreHelp: "هل تحتاج إلى مساعدة إضافية؟",
+
+  AppStrings.orderPriority: "أولوية الطلب :",
+  AppStrings.deliveryAddress: "عنوان التسليم : ",
+  AppStrings.deliveryAddressBody:
+      "Integer turpis quam، laoreet id orci nec، ultrices lacinia nunc. Aliquam erat vo",
+  AppStrings.pickupAddress: "عنوان الاستلام : ",
+  AppStrings.pickupAddressBody: "901 Thornridge Cir. شيلوه، هاواي 81063",
+  AppStrings.advertiserWillNotBeAb:
+      "لن يكون المُعلن قادرًا على مساعدتك في حمل أي عناصر",
+
+  AppStrings.becomeAHelper: "كن مساعدًا",
+  AppStrings.becomeAHelperSubTitle:
+      "اكسب دخلًا إضافيًا من خلال مساعدة الآخرين في النقل والتوصيل وإعادة التدوير. تستخدم سيارتك الخاصة وتختار من ومتى تقدم المساعدة.",
+
+  AppStrings.trueFlexibility: "مرونة حقيقية",
+  AppStrings.trueFlexibilitySubTitle:
+      "أنت من يقرر مقدار القيادة والدخل الذي تكسبه باستخدام تطبيق Task.",
+
+  AppStrings.superEasyToGetStarted: "سهل جدًا للبدء",
+  AppStrings.superEasyToGetStartedSubTitle:
+      "يمكنك البدء اليوم وكسب أول دخل لك.",
+
+  AppStrings.becauseEarthLovesIt: "لأن الأرض تحب ذلك",
+  AppStrings.becauseEarthLovesItSubTitle:
+      "من خلال مساعدة الآخرين نساهم في تقليل عدد السيارات على طرقنا.",
+
+  AppStrings.importantTermSubTitle:
+      "شروط مهمة قبل أن تتمكن من أن تصبح مساعدًا على منصتنا",
+
+  AppStrings.invite: "دعوة",
+  AppStrings.inviteSubTitle1: "امنح صديقًا رصيدًا بقيمة 100 دولار لاستخدامه",
+  AppStrings.inviteSubTitle2:
+      "عندما يقوم بنشر طلب ستحصل أنت أيضًا على 100 دولار",
+  AppStrings.inviteImageTile: "زوج من الأيادي المساعدة!",
+  AppStrings.inviteUrl: "https://jibjab.app/download",
+  AppStrings.inviteTextCenter:
+      "يمكنك أيضًا النقر على هذا الرابط لنسخه ولصقه في مكان آخر",
+
+  AppStrings.adviserProfile: "ملف المُعلن",
+  AppStrings.moreInfoAdviser:
+      "تاريخ التسجيل: 12 أغسطس 2025 \nالحملات: 24 \nالحملات النشطة: 3 \nالحملات المكتملة: 21 \nإجمالي الأرباح: 15,200 دولار",
+
+  AppStrings.termsAndConditionSubTitle:
+      "Lorem Ipsum هو نص شكلي يُستخدم في صناعة الطباعة والتنضيد. كان ولا يزال النص القياسي منذ القرن السادس عشر، وقد صمد عبر خمسة قرون وانتقل إلى التنضيد الإلكتروني دون تغيير يُذكر.",
+
+  AppStrings.selectTimeSlotTitle: "اختر فترة زمنية للاستلام",
+  AppStrings.selectTimeSlotSubTitle:
+      "يتم تنفيذ عمليات التسليم عادةً في أقرب وقت ممكن بعد وقت الاستلام",
+  AppStrings.asSoonAsPossible: "في أقرب وقت\nممكن",
+  AppStrings.anyTime: "في أي وقت",
+  AppStrings.hideExactTimeSlot: "إخفاء الفترات الزمنية الدقيقة",
+
+  AppStrings.pickOff: "الاستلام",
+  AppStrings.dropOff: "التسليم",
+
+  AppStrings.itsQuickSmall:
+      "إنه صغير جدًا، مجرد أشياء خفيفة الوزن يمكن وضعها بسهولة في سيارة صغيرة (ملاحظة: هذا ليس اختيارًا للمركبة، بل تقدير لأي شخص يريد المساعدة).",
+  AppStrings.thereAreAFewThingsWe:
+      "هناك بعض الأشياء التي نوصي بشدة بتجنبها عند استخدام Jibjab!",
+
+  AppStrings.recommend: "توصية",
+  AppStrings.thingsWeStronglyRecommend: "أشياء نوصي بشدة بتجنبها",
+  AppStrings.weAdviceYouNot:
+      "ننصحك بعدم استخدام Jibjab عند نقل أو التخلص من الأشياء الثقيلة جدًا",
+  AppStrings.exampleOfSuchItemsAre: "أمثلة على هذه العناصر هي",
+  AppStrings.pianos: "- البيانو",
+  AppStrings.safetyBoxes: "- خزائن الأمان",
+  AppStrings.bouldersGravelSoil:
+      "- الصخور الكبيرة أو الحصى أو التربة أو أكوام الأنقاض الكبيرة",
+
+  AppStrings.otherUsersHavePaidAround:
+      "قام مستخدمون آخرون بالدفع بحوالي 28 إلى 42 دولارًا",
+  AppStrings.redeem: "استرداد",
+
+  AppStrings.confirmAddress: "تأكيد العنوان",
+  AppStrings.transactionItemList: "قائمة عناصر المعاملة",
+
+  AppStrings.wasteType: "نوع النفايات",
+  AppStrings.allWasteIsSorted: "جميع النفايات مفروزة",
+  AppStrings.unsortedCollectionTakes:
+      "يستغرق جمع النفايات غير المفروزة وقتًا أطول لإعادة التدوير وقد يكلف أكثر.",
+
+  AppStrings.canHelpCarryAtPickUP: "يمكن المساعدة في الحمل عند الاستلام",
+  AppStrings.promoteForVideoDescription:
+      "كيف تتحقق JibJab من إعادة التدوير المعتمدة لراحة بالك. في JibJab نضمن التحقق الكامل من كل عملية إعادة تدوير باستخدام نظام تحديد المواقع والطوابع الزمنية والصور. هذا يعني أنه يمكنك الوثوق بأن أغراضك يتم التعامل معها بشكل صحيح ومسؤول. آمن. شفاف. موثوق.",
+};
+
